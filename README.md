@@ -25,210 +25,240 @@ Dive into a world where data flows like electricity, transforming raw informatio
 
 ```mermaid
 erDiagram
-    companies ||--o{ power_plants : owns
-    companies ||--o{ energy_contracts : sells
-    companies ||--o{ energy_contracts : buys
-    companies ||--o{ regulatory_reports : submits
-    companies ||--o{ energy_consumption : records
-    companies ||--o{ substations : operates
-    companies ||--o{ energy_storage : operates
-    companies ||--o{ auction_participants : participates
-
-    energy_sources ||--o{ power_plants : powers
-    energy_sources ||--o{ market_prices : influences
-
-    power_plants ||--o{ transmission_lines : starts_from
-    power_plants ||--o{ transmission_lines : ends_at
-
-    energy_contracts ||--o{ energy_transactions : generates
-
-    auctions ||--o{ auction_participants : includes
-
-    companies {
-        int id PK
-        string company_name
-        string cnpj
-        string address
-        string city
-        string state
-        string postal_code
-        string contact_person
-        string email
-        string phone
-        enum company_type
+    countries {
+        bigint id PK
+        varchar name
+        char code
+        char currency_code
         timestamp created_at
         timestamp updated_at
+        timestamp deleted_at
         boolean is_deleted
     }
-
-    energy_sources {
-        int id PK
-        string source_name
-        enum source_type
+    
+    destinations {
+        bigint id PK
+        bigint country_id FK
+        varchar name
         text description
+        varchar timezone
         timestamp created_at
         timestamp updated_at
+        timestamp deleted_at
+        boolean is_deleted
+    }
+    
+    languages {
+        bigint id PK
+        varchar name
+        char code
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+        boolean is_deleted
+    }
+    
+    destination_languages {
+        bigint destination_id PK, FK
+        bigint language_id PK, FK
+        boolean is_primary
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
         boolean is_deleted
     }
 
-    power_plants {
-        int id PK
-        string plant_name
-        int company_id FK
-        int energy_source_id FK
-        decimal capacity_mw
-        string location
+    local_cuisines {
+        bigint id PK
+        bigint destination_id FK
+        varchar dish_name
+        text description
+        boolean is_vegetarian
+        boolean is_vegan
+        decimal average_price
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+        boolean is_deleted
+    }
+
+    point_types {
+        bigint id PK
+        varchar name
+        varchar icon
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+        boolean is_deleted
+    }
+
+    points_of_interest {
+        bigint id PK
+        bigint destination_id FK
+        bigint point_type_id FK
+        varchar name
+        text address
         decimal latitude
         decimal longitude
-        date operational_start_date
+        text contact_info
         timestamp created_at
         timestamp updated_at
+        timestamp deleted_at
         boolean is_deleted
     }
 
-    energy_contracts {
-        int id PK
-        int seller_id FK
-        int buyer_id FK
-        string contract_number
+    countries ||--o{ destinations : has
+    destinations ||--o{ local_cuisines : has
+    destinations ||--o{ points_of_interest : has
+    point_types ||--o{ points_of_interest : categorizes
+    destinations ||--o{ destination_languages : has
+    languages ||--o{ destination_languages : used_in
+```
+
+```mermaid
+erDiagram
+    attraction_categories {
+        bigint id PK
+        varchar name
+        varchar icon
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+        boolean is_deleted
+    }
+
+    attractions {
+        bigint id PK
+        bigint destination_id FK
+        bigint category_id FK
+        varchar name
+        text description
+        text address
+        decimal latitude
+        decimal longitude
+        int average_duration
+        decimal entrance_fee
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+        boolean is_deleted
+    }
+
+    restaurants {
+        bigint id PK
+        bigint destination_id FK
+        varchar name
+        varchar cuisine_type
+        enum price_range
+        text address
+        decimal latitude
+        decimal longitude
+        text contact_info
+        boolean reservation_required
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+        boolean is_deleted
+    }
+
+    events {
+        bigint id PK
+        bigint destination_id FK
+        varchar name
+        text description
         date start_date
         date end_date
-        decimal energy_amount_mwh
-        decimal price_per_mwh
-        enum contract_type
-        enum status
+        text location
+        decimal ticket_price
         timestamp created_at
         timestamp updated_at
+        timestamp deleted_at
         boolean is_deleted
     }
 
-    energy_transactions {
-        int id PK
-        int contract_id FK
-        date transaction_date
-        decimal energy_amount_mwh
-        decimal price_per_mwh
-        decimal total_amount
-        timestamp created_at
-        timestamp updated_at
-        boolean is_deleted
-    }
-
-    transmission_lines {
-        int id PK
-        string line_name
-        int start_point_id FK
-        int end_point_id FK
-        decimal capacity_mw
-        int voltage_kv
-        decimal length_km
-        date operational_start_date
-        timestamp created_at
-        timestamp updated_at
-        boolean is_deleted
-    }
-
-    market_prices {
-        int id PK
-        date price_date
-        int energy_source_id FK
-        enum region
-        decimal price_per_mwh
-        timestamp created_at
-        timestamp updated_at
-        boolean is_deleted
-    }
-
-    regulatory_reports {
-        int id PK
-        int company_id FK
-        enum report_type
-        date report_date
-        decimal total_energy_traded_mwh
-        decimal average_price_per_mwh
-        enum compliance_status
-        text comments
-        timestamp created_at
-        timestamp updated_at
-        boolean is_deleted
-    }
-
-    substations {
-        int id PK
-        string substation_name
-        int company_id FK
-        decimal capacity_mva
-        int voltage_level_kv
-        decimal latitude
-        decimal longitude
-        date operational_start_date
-        timestamp created_at
-        timestamp updated_at
-        boolean is_deleted
-    }
-
-    energy_consumption {
-        int id PK
-        int company_id FK
-        date consumption_date
-        decimal energy_consumed_mwh
-        decimal peak_demand_mw
-        timestamp created_at
-        timestamp updated_at
-        boolean is_deleted
-    }
-
-    auctions {
-        int id PK
-        string auction_name
-        date auction_date
-        enum auction_type
-        decimal total_energy_mwh
-        decimal average_price_per_mwh
-        timestamp created_at
-        timestamp updated_at
-        boolean is_deleted
-    }
-
-    auction_participants {
-        int id PK
-        int auction_id FK
-        int company_id FK
-        decimal energy_offered_mwh
-        decimal bid_price_per_mwh
-        boolean is_winner
-        timestamp created_at
-        timestamp updated_at
-        boolean is_deleted
-    }
-
-    weather_data {
-        int id PK
-        string station_id
-        date measurement_date
-        decimal temperature_celsius
-        decimal wind_speed_ms
-        decimal solar_radiation_wm2
-        decimal precipitation_mm
-        timestamp created_at
-        timestamp updated_at
-        boolean is_deleted
-    }
-
-    energy_storage {
-        int id PK
-        string facility_name
-        int company_id FK
-        enum storage_type
-        decimal capacity_mwh
-        decimal max_charge_rate_mw
-        decimal max_discharge_rate_mw
-        date operational_start_date
-        timestamp created_at
-        timestamp updated_at
-        boolean is_deleted
-    }
+    destinations ||--o{ attractions : has
+    attraction_categories ||--o{ attractions : categorizes
+    destinations ||--o{ restaurants : has
+    destinations ||--o{ events : hosts
 ```
+
+```mermaid
+erDiagram
+    trip_plans {
+        bigint id PK
+        varchar name
+        date start_date
+        date end_date
+        decimal budget
+        text notes
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+        boolean is_deleted
+    }
+
+    trip_destinations {
+        bigint trip_id PK, FK
+        bigint destination_id PK, FK
+        date arrival_date
+        date departure_date
+        bigint accommodation_id FK
+        text notes
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+        boolean is_deleted
+    }
+
+    trip_activities {
+        bigint id PK
+        bigint trip_id FK
+        date activity_date
+        time start_time
+        time end_time
+        enum activity_type
+        bigint reference_id
+        text notes
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+        boolean is_deleted
+    }
+
+    travel_documents {
+        bigint id PK
+        bigint trip_id FK
+        varchar document_type
+        varchar document_number
+        date expiry_date
+        text notes
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+        boolean is_deleted
+    }
+
+    packing_lists {
+        bigint id PK
+        bigint trip_id FK
+        varchar item_name
+        varchar category
+        int quantity
+        boolean is_packed
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+        boolean is_deleted
+    }
+
+    trip_plans ||--o{ trip_destinations : includes
+    trip_plans ||--o{ trip_activities : contains
+    trip_plans ||--o{ travel_documents : requires
+    trip_plans ||--o{ packing_lists : has
+    destinations ||--o{ trip_destinations : part_of
+    points_of_interest ||--o{ trip_destinations : accommodates
+```
+
 
 ## 🔌 How to Connect to Our BI Grid
 
